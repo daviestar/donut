@@ -1,0 +1,14 @@
+html {
+  font: 14px/1.5 sans-serif;
+}
+
+button {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: purple;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 3px;
+  cursor: pointer;
+}
