@@ -1,21 +1,32 @@
 import {useState, useEffect} from 'react'
 
-export default function useAnimation(changedProp1, changedProp2, props = {}) {
-  // console.log(changedProp)
-
+export default function useAnimation(changedProp, props = {}) {
   const {easing = 'linear', duration = 500, delay = 0} = props
-  const elapsed = useAnimationTimer(changedProp1, changedProp2, {duration, delay})
+  const elapsed = useAnimationTimer(changedProp, duration, delay)
   const n = Math.min(1, elapsed / duration)
   return timingFunctions[easing](n)
 }
 
-function useAnimationTimer(changedProp1, changedProp2, {duration, delay}) {
+// function useFrameNow(isActive) {
+//   const [now, setNow] = useState(null)
+//
+//   useEffect(() => {
+//     if (!isActive) {
+//       return
+//     }
+//     const id = requestAnimationFrame(() => {
+//       setNow(performance.now())
+//     })
+//     return () => cancelAnimationFrame(id)
+//   }, [isActive, now])
+//
+//   return isActive ? now : null
+// }
+
+function useAnimationTimer(changedProp, duration, delay) {
   const [elapsed, setTime] = useState(0)
-  // console.log('hey!')
 
   useEffect(() => {
-    setTime(0)
-    // console.log(changedProp, {duration, delay})
     let animationFrame, timerStop, start
 
     function onFrame() {
@@ -43,7 +54,7 @@ function useAnimationTimer(changedProp1, changedProp2, {duration, delay}) {
       clearTimeout(timerDelay)
       cancelAnimationFrame(animationFrame)
     }
-  }, [changedProp1, changedProp2])
+  }, [changedProp, duration, delay])
 
   return elapsed
 }

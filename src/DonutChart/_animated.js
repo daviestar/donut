@@ -1,8 +1,8 @@
-import React from 'react'
+import React, {useEffect} from 'react'
 import {pie, arc} from 'd3-shape'
 // import {animated, useSpring} from 'react-spring'
 // import {interpolate} from 'd3-interpolate'
-import useAnimation from '../hooks/useAnimation'
+// import useAnimation from '../hooks/useAnimation'
 import usePrevious from '../hooks/usePrevious'
 import './index.css'
 
@@ -38,17 +38,30 @@ export default function Pie(props) {
   )
 }
 
+// function tween(t, from, to) {
+//   return from + (t * (to - from))
+// }
+
 function Arc(props) {
-  const {idx, from, to, createArc} = props
+  const {idx, to, createArc} = props
 
-  const t = useAnimation(to.startAngle, to.endAngle)
-  const startAngle = from.startAngle + (t * (to.startAngle - from.startAngle))
-  const endAngle = from.endAngle + (t * (to.endAngle - from.endAngle))
-  const label = from.value + (t * (to.value - from.value))
+  useEffect(() => {
+    if (idx === 0) {
+      console.log('hey!', to.startAngle, to.endAngle)
+    }
+  }, [to.startAngle, to.endAngle])
 
-  if (idx === 0) {
-    console.log(t, {from, to})
-  }
+  // const t = useAnimation(to.startAngle + to.endAngle)
+  // const startAngle = tween(t, from.startAngle, to.startAngle)
+  // const endAngle = tween(t, from.endAngle, to.endAngle)
+  // const label = tween(t, from.value, to.value)
+  const startAngle = to.startAngle
+  const endAngle = to.endAngle
+  const label = to.value
+
+  // if (idx === 0) {
+  //   console.log(t, {from, to})
+  // }
 
   return (
     <g className='arc'>
@@ -81,14 +94,6 @@ Arc.defaultProps = {
 }
 
 Pie.defaultProps = {
-  from: {
-    data: 0,
-    endAngle: 0,
-    index: 0,
-    padAngle: 0,
-    startAngle: 0,
-    value: 0,
-  },
   width: 200,
   height: 200,
   innerRadius: 60,
