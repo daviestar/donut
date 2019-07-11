@@ -1,6 +1,5 @@
-import React, {useState, useEffect} from 'react'
-// import DonutChart from './DonutChart'
-import Pie from './DonutChart/_animated'
+import React, {useState} from 'react'
+import DonutChart from './DonutChart'
 import './App.css'
 
 function generateValues(length = 5) {
@@ -9,17 +8,15 @@ function generateValues(length = 5) {
 
 export default function App() {
   const [values, setValues] = useState(generateValues())
-  const changeData = () => {
+  function handleClick() {
     setValues(generateValues())
   }
-  useEffect(() => {
-    setValues(generateValues())
-  }, [])
   return (
     <div className="app">
-      {/* <DonutChart values={values} /> */}
-      <Pie values={values} />
-      <button onClick={changeData}>Update</button>
+      <DonutChart values={values} />
+      <button onClick={handleClick}>
+        Generate
+      </button>
     </div>
   )
 }

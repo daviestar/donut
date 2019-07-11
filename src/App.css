@@ -1,3 +1,10 @@
+* {
+  padding: 0;
+  border: 0;
+  margin: 0;
+  outline: none;
+}
+
 html {
   font: 14px/1.5 sans-serif;
 }

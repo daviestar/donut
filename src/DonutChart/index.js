@@ -1,5 +1,7 @@
-import React from 'react'
+import React, {useState, useEffect, useMemo} from 'react'
 import {pie, arc} from 'd3-shape'
+import usePrevious from '../hooks/usePrevious'
+import transition, {tween} from '../animate'
 import './index.css'
 
 const colors = [
@@ -16,19 +18,22 @@ export default function DonutChart(props) {
     padAngle, cornerRadius, values,
   } = props
 
-  const createPie = pie()
-  const segments = createPie(values)
+  const createPie = useMemo(
+    () => pie().sort(null), []
+  )
 
-  const createArc = arc()
-    .outerRadius(radius - padding)
-    .innerRadius(radius - thickness + padding)
-    .padAngle(padAngle)
-    .cornerRadius(cornerRadius)
+  const createArc = useMemo(
+    () => arc()
+      .outerRadius(radius - padding)
+      .innerRadius(radius - thickness + padding)
+      .padAngle(padAngle)
+      .cornerRadius(cornerRadius),
+    [radius, padding, thickness, padAngle, cornerRadius]
+  )
 
-  const segmentPaths = segments
-    .map((o) => createArc(o))
-  const segmentCentroids = segments
-    .map((o) => createArc.centroid(o))
+  const segments = useMemo(
+    () => createPie(values), [createPie, values]
+  )
 
   return (
     <svg className="donut" viewBox={`0 0 ${radius * 2} ${radius * 2}`}>
@@ -41,11 +46,13 @@ export default function DonutChart(props) {
           strokeWidth={thickness}
           stroke="rgba(0, 0, 0, 0.1)"
         />
-        {segmentPaths.map((path, idx) => (
-          <path key={idx} fill={colors[idx]} d={path} />
-        ))}
-        {segmentCentroids.map(([x, y], idx) => (
-          <circle key={idx} cx={x} cy={y} r={2} fill="white" />
+        {segments.map((segment, idx) => (
+          <Arc
+            key={idx}
+            fill={colors[idx]}
+            segment={segment}
+            createArc={createArc}
+          />
         ))}
       </g>
     </svg>
@@ -59,4 +66,55 @@ DonutChart.defaultProps = {
   cornerRadius: 1.5,
   padding: 2.5,
   values: []
+}
+
+function Arc({fill, segment, createArc}) {
+  const [startAngle, setStartAngle] = useState(null)
+  const [endAngle, setEndAngle] = useState(null)
+  const prevStartAngle = usePrevious(segment.startAngle)
+  const prevEndAngle = usePrevious(segment.endAngle)
+
+  useEffect(() => {
+    // on mount
+    if (
+      prevStartAngle === undefined &&
+      prevEndAngle === undefined
+    ) {
+      setStartAngle(segment.startAngle)
+      setEndAngle(segment.endAngle)
+
+    // transition on change
+    } else if (
+      prevStartAngle !== segment.startAngle ||
+      prevEndAngle !== segment.endAngle
+    ) {
+      transition({
+        duration: 400,
+        update: (dt, fns) => {
+          const t = fns.easeOutCubic(dt)
+          setStartAngle(tween(t, prevStartAngle, segment.startAngle))
+          setEndAngle(tween(t, prevEndAngle, segment.endAngle))
+        }
+      })
+    }
+  }, [
+    prevStartAngle, segment.startAngle,
+    prevEndAngle, segment.endAngle
+  ])
+
+  const path = useMemo(
+    () => createArc({startAngle, endAngle}),
+    [createArc, startAngle, endAngle]
+  )
+  const [x, y] = useMemo(
+    () => createArc.centroid({startAngle, endAngle}),
+    [createArc, startAngle, endAngle]
+  )
+
+  return (
+    <g>
+      <path fill={fill} d={path} />
+      <circle cx={x} cy={y} r={1} fill="white" />
+    </g>
+  )
 }
